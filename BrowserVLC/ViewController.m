@@ -1,7 +1,12 @@
+//
+//  ViewController.m
+//  BrowserVLC
+//
+
 #import "ViewController.h"
 #import "BrowserVLCVideoPlayerViewController.h"
+#import "BrowserPlayerPreferences.h"
 #import <AVKit/AVKit.h>
-#import <objc/message.h>
 
 static UIImage *kDefaultCursor(void) {
     static UIImage *image;
@@ -23,50 +28,60 @@ static UIImage *kPointerCursor(void) {
     return image;
 }
 
-static void BrowserCallIdArg(id obj, SEL sel, id arg) {
-    if (obj && [obj respondsToSelector:sel]) {
-        void (*msgSend)(id, SEL, id) = (void (*)(id, SEL, id))objc_msgSend;
-        msgSend(obj, sel, arg);
-    }
-}
-
-static void BrowserCallVoid(id obj, SEL sel) {
-    if (obj && [obj respondsToSelector:sel]) {
-        ((void (*)(id, SEL))objc_msgSend)(obj, sel);
-    }
-}
-
-static BOOL BrowserCallBool(id obj, SEL sel) {
-    if (obj && [obj respondsToSelector:sel]) {
-        return ((BOOL (*)(id, SEL))objc_msgSend)(obj, sel);
-    }
-    return NO;
-}
-
-static id BrowserCallId(id obj, SEL sel) {
-    if (obj && [obj respondsToSelector:sel]) {
-        return ((id (*)(id, SEL))objc_msgSend)(obj, sel);
-    }
-    return nil;
-}
-
 @interface ViewController () {
     UIImageView *_cursorView;
+    CGPoint _lastTouchLocation;
 }
 
-@property (nonatomic, strong) id webview;          // WKWebView or UIWebView
-@property (nonatomic, assign) BOOL usingWKWebView;
+@property (nonatomic, strong) UIWebView *webview;
+@property (nonatomic, strong) NSString *requestURL;
 @property (nonatomic, assign) BOOL cursorMode;
-
-@property (nonatomic, strong) UIPanGestureRecognizer *cursorPan;
-@property (nonatomic, strong) UIPanGestureRecognizer *scrollPan;
+@property (nonatomic, assign) BOOL displayedHintsOnLaunch;
 
 @end
 
 @implementation ViewController
 
-- (BOOL)prefersFocusEnvironments {
-    return NO;
+#pragma mark - Focus control (stop top menu moving)
+
+- (void)disableFocusForTopMenuButtons {
+    // Prevent focus engine from hijacking swipes and moving highlight on top menu.
+    // (tvOS respects canBecomeFocused and userInteractionEnabled for focus.)
+    NSArray *buttons = @[
+        self.btnImageBack ?: [NSNull null],
+        self.btnImageForward ?: [NSNull null],
+        self.btnImageRefresh ?: [NSNull null],
+        self.btnImageHome ?: [NSNull null],
+        self.btnImageFullScreen ?: [NSNull null],
+        self.btnImgMenu ?: [NSNull null],
+    ];
+
+    for (id v in buttons) {
+        if (v == [NSNull null]) continue;
+        UIView *view = (UIView *)v;
+        view.userInteractionEnabled = NO;
+    }
+}
+
+#pragma mark - View Lifecycle
+
+- (void)viewDidAppear:(BOOL)animated {
+    [super viewDidAppear:animated];
+    [self webViewDidAppear];
+    _displayedHintsOnLaunch = YES;
+}
+
+- (void)webViewDidAppear {
+    NSString *saved = [[NSUserDefaults standardUserDefaults] stringForKey:@"savedURLtoReopen"];
+    if (saved != nil) {
+        NSURL *url = [NSURL URLWithString:saved];
+        if (url) [self.webview loadRequest:[NSURLRequest requestWithURL:url]];
+        [[NSUserDefaults standardUserDefaults] removeObjectForKey:@"savedURLtoReopen"];
+        [[NSUserDefaults standardUserDefaults] synchronize];
+    }
+    else if ([self.webview request] == nil) {
+        [self loadHomePage];
+    }
 }
 
 - (void)viewDidLoad {
@@ -75,116 +90,105 @@ static id BrowserCallId(id obj, SEL sel) {
 
     [self initWebView];
 
+    // Gestures
+    UITapGestureRecognizer *doubleTapSelect = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleTouchSurfaceDoubleTap:)];
+    doubleTapSelect.numberOfTapsRequired = 2;
+    doubleTapSelect.allowedPressTypes = @[@(UIPressTypeSelect)];
+    [self.view addGestureRecognizer:doubleTapSelect];
+
+    UITapGestureRecognizer *doubleTapPlayPause = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handlePlayPauseDoubleTap:)];
+    doubleTapPlayPause.numberOfTapsRequired = 2;
+    doubleTapPlayPause.allowedPressTypes = @[@(UIPressTypePlayPause)];
+    [self.view addGestureRecognizer:doubleTapPlayPause];
+
     // Cursor
     _cursorView = [[UIImageView alloc] initWithFrame:CGRectMake(0, 0, 64, 64)];
     _cursorView.center = CGPointMake(CGRectGetMidX([UIScreen mainScreen].bounds), CGRectGetMidY([UIScreen mainScreen].bounds));
     _cursorView.image = kDefaultCursor();
     [self.view addSubview:_cursorView];
 
-    // Pan for cursor
-    self.cursorPan = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(handleCursorPan:)];
-    self.cursorPan.allowedTouchTypes = @[ @(UITouchTypeIndirect) ];
-    self.cursorPan.cancelsTouchesInView = YES;
-    [self.view addGestureRecognizer:self.cursorPan];
-
-    // Pan for manual scrolling (enabled only in scroll mode)
-    self.scrollPan = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(handleScrollPan:)];
-    self.scrollPan.allowedTouchTypes = @[ @(UITouchTypeIndirect) ];
-    self.scrollPan.cancelsTouchesInView = YES;
-    self.scrollPan.enabled = NO;
-    [self.view addGestureRecognizer:self.scrollPan];
-
-    // Double-tap SELECT toggle cursor/scroll
-    UITapGestureRecognizer *doubleTapSelect = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleTouchSurfaceDoubleTap:)];
-    doubleTapSelect.numberOfTapsRequired = 2;
-    doubleTapSelect.allowedPressTypes = @[@(UIPressTypeSelect)];
-    [self.view addGestureRecognizer:doubleTapSelect];
-
-    // Double-tap Play/Pause menu
-    UITapGestureRecognizer *doubleTapPlayPause = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handlePlayPauseDoubleTap:)];
-    doubleTapPlayPause.numberOfTapsRequired = 2;
-    doubleTapPlayPause.allowedPressTypes = @[@(UIPressTypePlayPause)];
-    [self.view addGestureRecognizer:doubleTapPlayPause];
-
     self.loadingSpinner.hidesWhenStopped = YES;
 
-    // start cursor mode
-    [self setCursorModeEnabled:YES];
+    // START IN CURSOR MODE
+    self.cursorMode = YES;
+    _cursorView.hidden = NO;
 
-    [self loadHomePage];
+    // Disable focus movement on top menu buttons
+    [self disableFocusForTopMenuButtons];
 }
-
-#pragma mark - WebView
 
 - (void)initWebView {
-    Class WKWebViewClass = NSClassFromString(@"WKWebView");
-    if (WKWebViewClass) {
-        self.usingWKWebView = YES;
-        self.webview = ((id (*)(id, SEL, CGRect))objc_msgSend)([WKWebViewClass alloc], NSSelectorFromString(@"initWithFrame:"), self.view.bounds);
-        BrowserCallIdArg(self.webview, NSSelectorFromString(@"setNavigationDelegate:"), self);
-        BrowserCallIdArg(self.webview, NSSelectorFromString(@"setUIDelegate:"), self);
-    } else {
-        self.usingWKWebView = NO;
-        Class UIWebViewClass = NSClassFromString(@"UIWebView");
-        if (UIWebViewClass) {
-            self.webview = [[UIWebViewClass alloc] init];
-            BrowserCallIdArg(self.webview, NSSelectorFromString(@"setDelegate:"), self);
-        }
+    if (@available(tvOS 11.0, *)) {
+        self.additionalSafeAreaInsets = UIEdgeInsetsZero;
     }
 
-    if (!self.webview) return;
-
+    self.webview = [[NSClassFromString(@"UIWebView") alloc] init];
     [self.webview setTranslatesAutoresizingMaskIntoConstraints:NO];
+    [self.webview setClipsToBounds:NO];
+
     [self.browserContainerView addSubview:self.webview];
+
     [self.webview setFrame:self.view.bounds];
+    [self.webview setDelegate:self];
+    [self.webview setLayoutMargins:UIEdgeInsetsZero];
 
-    UIScrollView *sv = [self webScrollView];
-    if (sv) {
-        sv.panGestureRecognizer.allowedTouchTypes = @[ @(UITouchTypeIndirect) ];
-        sv.contentInset = UIEdgeInsetsZero;
-        if (@available(tvOS 11.0, *)) sv.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentNever;
+    UIScrollView *scrollView = [self.webview scrollView];
+    [scrollView setLayoutMargins:UIEdgeInsetsZero];
+    if (@available(tvOS 11.0, *)) {
+        scrollView.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentNever;
+    } else {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+        self.automaticallyAdjustsScrollViewInsets = NO;
+#pragma clang diagnostic pop
     }
-}
 
-- (UIScrollView *)webScrollView {
-    if ([self.webview respondsToSelector:NSSelectorFromString(@"scrollView")]) {
-        return BrowserCallId(self.webview, NSSelectorFromString(@"scrollView"));
-    }
-    return nil;
-}
+    self.topMenuView.hidden = NO;
+    [self updateTopNavAndWebView];
+    scrollView.contentOffset = CGPointZero;
+    scrollView.contentInset = UIEdgeInsetsZero;
+    scrollView.frame = self.view.bounds;
+    scrollView.clipsToBounds = NO;
+    [scrollView setNeedsLayout];
+    [scrollView layoutIfNeeded];
+    scrollView.bounces = YES;
+    scrollView.panGestureRecognizer.allowedTouchTypes = @[ @(UITouchTypeIndirect) ];
+    scrollView.scrollEnabled = NO;
 
-- (void)loadURL:(NSURL *)url {
-    if (!url) return;
-    NSURLRequest *req = [NSURLRequest requestWithURL:url];
-    BrowserCallIdArg(self.webview, NSSelectorFromString(@"loadRequest:"), req);
+    [self.webview setUserInteractionEnabled:NO];
 }
 
 - (void)loadHomePage {
-    [self loadURL:[NSURL URLWithString:@"https://www.google.com"]];
-}
-
-#pragma mark - Modes
-
-- (void)setCursorModeEnabled:(BOOL)enabled {
-    self.cursorMode = enabled;
-
-    UIScrollView *sv = [self webScrollView];
-    BOOL allowWebInteraction = !enabled;
-
-    if (sv) {
-        sv.scrollEnabled = allowWebInteraction;
+    NSString *homepage = [[NSUserDefaults standardUserDefaults] stringForKey:@"homepage"];
+    if (homepage) {
+        [self.webview loadRequest:[NSURLRequest requestWithURL:[NSURL URLWithString:homepage]]];
+    } else {
+        [self.webview loadRequest:[NSURLRequest requestWithURL:[NSURL URLWithString:@"https://www.google.com"]]];
     }
-    [self.webview setUserInteractionEnabled:allowWebInteraction];
-
-    // enable/disable manual scroll pan
-    self.scrollPan.enabled = allowWebInteraction;
-
-    _cursorView.hidden = !enabled;
 }
 
-- (void)toggleMode {
-    [self setCursorModeEnabled:!self.cursorMode];
+#pragma mark - Top Navigation
+
+- (void)hideTopNav {
+    self.topMenuView.hidden = YES;
+    [self updateTopNavAndWebView];
 }
+
+- (void)showTopNav {
+    self.topMenuView.hidden = NO;
+    [self updateTopNavAndWebView];
+}
+
+- (void)updateTopNavAndWebView {
+    if (!self.topMenuView.hidden) {
+        CGFloat topHeight = self.topMenuView.frame.size.height;
+        [self.webview setFrame:CGRectMake(0, topHeight, self.view.bounds.size.width, self.view.bounds.size.height - topHeight)];
+    } else {
+        [self.webview setFrame:self.view.bounds];
+    }
+}
+
+#pragma mark - Mode Toggle
 
 - (void)handleTouchSurfaceDoubleTap:(UITapGestureRecognizer *)sender {
     (void)sender;
@@ -196,173 +200,109 @@ static id BrowserCallId(id obj, SEL sel) {
     [self showAdvancedMenu];
 }
 
-#pragma mark - Cursor movement
+- (void)toggleMode {
+    self.cursorMode = !self.cursorMode;
 
-- (void)handleCursorPan:(UIPanGestureRecognizer *)gr {
-    if (!self.cursorMode) return;
-
-    CGPoint delta = [gr translationInView:self.view];
-    [gr setTranslation:CGPointZero inView:self.view];
-
-    CGFloat speed = 1.25;
-    CGRect f = _cursorView.frame;
-    f.origin.x += delta.x * speed;
-    f.origin.y += delta.y * speed;
-
-    CGFloat maxX = [UIScreen mainScreen].bounds.size.width - f.size.width;
-    CGFloat maxY = [UIScreen mainScreen].bounds.size.height - f.size.height;
-    f.origin.x = MAX(0, MIN(f.origin.x, maxX));
-    f.origin.y = MAX(0, MIN(f.origin.y, maxY));
-    _cursorView.frame = f;
-
-    _cursorView.image = kDefaultCursor();
-}
-
-#pragma mark - Manual scrolling (scroll mode)
-
-- (void)handleScrollPan:(UIPanGestureRecognizer *)gr {
-    if (self.cursorMode) return;
-
-    UIScrollView *sv = [self webScrollView];
-    if (!sv) return;
-
-    // tvOS "natural" feel: move content opposite of finger
-    CGPoint delta = [gr translationInView:self.view];
-    [gr setTranslation:CGPointZero inView:self.view];
-
-    CGPoint offset = sv.contentOffset;
-    offset.x -= delta.x;
-    offset.y -= delta.y;
-
-    CGFloat maxX = MAX(0.0, sv.contentSize.width - sv.bounds.size.width);
-    CGFloat maxY = MAX(0.0, sv.contentSize.height - sv.bounds.size.height);
-    offset.x = MAX(0.0, MIN(offset.x, maxX));
-    offset.y = MAX(0.0, MIN(offset.y, maxY));
-
-    sv.contentOffset = offset;
-}
-
-#pragma mark - Clicking (Select / Enter)
-
-- (BOOL)isUIWebView {
-    return !self.usingWKWebView && [self.webview respondsToSelector:NSSelectorFromString(@"stringByEvaluatingJavaScriptFromString:")];
-}
-
-- (NSString *)uiwebviewEval:(NSString *)js {
-    if (![self isUIWebView]) return nil;
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Warc-performSelector-leaks"
-    return [self.webview performSelector:NSSelectorFromString(@"stringByEvaluatingJavaScriptFromString:") withObject:js];
-#pragma clang diagnostic pop
-}
-
-- (CGPoint)domPointForCursor {
-    // Convert cursor origin into webview coordinates then scale to DOM pixels (window.innerWidth)
-    CGPoint point = [self.view convertPoint:_cursorView.frame.origin toView:self.webview];
-    if (point.y < 0) return point;
-
-    NSInteger displayWidth = 0;
-    if ([self isUIWebView]) {
-        displayWidth = [[self uiwebviewEval:@"window.innerWidth"] integerValue];
+    if (self.cursorMode) {
+        [self.webview scrollView].scrollEnabled = NO;
+        [self.webview setUserInteractionEnabled:NO];
+        _cursorView.hidden = NO;
+        _cursorView.transform = CGAffineTransformIdentity;
+        _cursorView.center = CGPointMake(CGRectGetMidX([UIScreen mainScreen].bounds), CGRectGetMidY([UIScreen mainScreen].bounds));
     } else {
-        // For WKWebView we’ll assume CSS pixels ~= view pixels (ok-ish); true fix needs async JS.
-        displayWidth = 0;
+        [self.webview scrollView].scrollEnabled = YES;
+        [self.webview setUserInteractionEnabled:YES];
+        _cursorView.hidden = YES;
     }
-
-    if (displayWidth > 0) {
-        CGFloat scale = CGRectGetWidth([self.webview frame]) / (CGFloat)displayWidth;
-        if (scale > 0) {
-            point.x /= scale;
-            point.y /= scale;
-        }
-    }
-    return point;
 }
 
-- (void)clickElementUnderCursor_UIWebView {
-    CGPoint p = [self domPointForCursor];
-    if (p.y < 0) return;
+#pragma mark - Click Handler (FIXED)
+
+- (CGPoint)domPointFromViewPoint:(CGPoint)pointInWebViewCoords {
+    int displayWidth = [[self.webview stringByEvaluatingJavaScriptFromString:@"window.innerWidth"] intValue];
+    if (displayWidth <= 0) return pointInWebViewCoords;
+
+    CGFloat scale = [self.webview frame].size.width / displayWidth;
+    if (scale <= 0) return pointInWebViewCoords;
+
+    CGPoint p = pointInWebViewCoords;
+    p.x /= scale;
+    p.y /= scale;
+    return p;
+}
+
+- (void)performClick:(CGPoint)pointInWebViewCoords {
+    CGPoint p = [self domPointFromViewPoint:pointInWebViewCoords];
 
     NSString *js =
     [NSString stringWithFormat:
      @"(function(){"
      "var x=%d,y=%d;"
-     "var t=document.elementFromPoint(x,y);"
-     "if(!t) return 'no-target';"
-     "try{ if(t.focus) t.focus(); }catch(e){}"
-     "try{"
-     "var ev=['pointerdown','mousedown','pointerup','mouseup','click'];"
-     "for(var i=0;i<ev.length;i++){"
-     "  try{ t.dispatchEvent(new MouseEvent(ev[i],{bubbles:true,cancelable:true,view:window,clientX:x,clientY:y})); }catch(e){}"
+     "var el=document.elementFromPoint(x,y);"
+     "if(!el) return 'no-el';"
+     "try{ if(el.focus) el.focus(); }catch(e){}"
+     "function fire(name){"
+     "  try{ el.dispatchEvent(new MouseEvent(name,{bubbles:true,cancelable:true,view:window,clientX:x,clientY:y})); }catch(e){}"
      "}"
-     "}catch(e){}"
-     "try{ if(typeof t.click==='function') t.click(); }catch(e){}"
+     "fire('mousemove'); fire('mouseover'); fire('mouseenter');"
+     "fire('pointerdown'); fire('mousedown');"
+     "fire('pointerup'); fire('mouseup');"
+     "if(typeof el.click==='function'){ try{ el.click(); }catch(e){} }"
+     "fire('click');"
      "return 'clicked';"
      "})();",
      (int)p.x, (int)p.y];
 
-    [self uiwebviewEval:js];
+    [self.webview stringByEvaluatingJavaScriptFromString:js];
 }
 
-- (void)clickElementUnderCursor_WKWebView {
-    // Async JS
-    CGPoint p = [self domPointForCursor];
-    if (p.y < 0) return;
+#pragma mark - Input dialog (unchanged)
 
-    NSString *js =
-    [NSString stringWithFormat:
-     @"(function(){"
-     "var x=%d,y=%d;"
-     "var t=document.elementFromPoint(x,y);"
-     "if(!t) return 'no-target';"
-     "try{ if(t.focus) t.focus(); }catch(e){}"
-     "function dispatch(name){"
-     "  try{ t.dispatchEvent(new MouseEvent(name,{bubbles:true,cancelable:true,view:window,clientX:x,clientY:y})); }catch(e){}"
-     "}"
-     "dispatch('mousedown'); dispatch('mouseup'); dispatch('click');"
-     "try{ if(typeof t.click==='function') t.click(); }catch(e){}"
-     "return 'clicked';"
-     "})();",
-     (int)p.x, (int)p.y];
+- (void)showInputDialog:(CGPoint)pointInWebViewCoords type:(NSString *)fieldType {
+    CGPoint p = [self domPointFromViewPoint:pointInWebViewCoords];
 
-    SEL evalSel = NSSelectorFromString(@"evaluateJavaScript:completionHandler:");
-    if ([self.webview respondsToSelector:evalSel]) {
-        void (*msgSend)(id, SEL, id, id) = (void (*)(id, SEL, id, id))objc_msgSend;
-        msgSend(self.webview, evalSel, js, nil);
-    }
+    NSString *placeholder = [self.webview stringByEvaluatingJavaScriptFromString:
+                             [NSString stringWithFormat:@"document.elementFromPoint(%i,%i).placeholder", (int)p.x, (int)p.y]];
+    NSString *value = [self.webview stringByEvaluatingJavaScriptFromString:
+                       [NSString stringWithFormat:@"document.elementFromPoint(%i,%i).value", (int)p.x, (int)p.y]];
+
+    UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"Input" message:placeholder preferredStyle:UIAlertControllerStyleAlert];
+
+    [alert addTextFieldWithConfigurationHandler:^(UITextField *tf) {
+        tf.placeholder = placeholder ?: @"Enter text";
+        tf.text = value;
+        if ([fieldType isEqualToString:@"url"]) tf.keyboardType = UIKeyboardTypeURL;
+        else if ([fieldType isEqualToString:@"email"]) tf.keyboardType = UIKeyboardTypeEmailAddress;
+        else if ([fieldType isEqualToString:@"number"]) tf.keyboardType = UIKeyboardTypeNumbersAndPunctuation;
+        if ([fieldType isEqualToString:@"password"]) tf.secureTextEntry = YES;
+    }];
+
+    UIAlertAction *submitAction = [UIAlertAction actionWithTitle:@"Submit" style:UIAlertActionStyleDefault handler:^(UIAlertAction *a) {
+        (void)a;
+        NSString *text = alert.textFields[0].text ?: @"";
+        NSString *escaped = [text stringByReplacingOccurrencesOfString:@"'" withString:@"\\'"];
+        [self.webview stringByEvaluatingJavaScriptFromString:[NSString stringWithFormat:
+            @"(function(){var el=document.elementFromPoint(%i,%i); if(!el) return; el.value='%@'; if(el.form) el.form.submit();})();",
+            (int)p.x, (int)p.y, escaped]];
+    }];
+
+    UIAlertAction *doneAction = [UIAlertAction actionWithTitle:@"Done" style:UIAlertActionStyleDefault handler:^(UIAlertAction *a) {
+        (void)a;
+        NSString *text = alert.textFields[0].text ?: @"";
+        NSString *escaped = [text stringByReplacingOccurrencesOfString:@"'" withString:@"\\'"];
+        [self.webview stringByEvaluatingJavaScriptFromString:[NSString stringWithFormat:
+            @"(function(){var el=document.elementFromPoint(%i,%i); if(!el) return; el.value='%@';})();",
+            (int)p.x, (int)p.y, escaped]];
+    }];
+
+    [alert addAction:doneAction];
+    [alert addAction:submitAction];
+    [alert addAction:[UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleCancel handler:nil]];
+
+    [self presentViewController:alert animated:YES completion:nil];
 }
 
-- (void)pressesEnded:(NSSet<UIPress *> *)presses withEvent:(UIPressesEvent *)event {
-    (void)event;
-    UIPress *press = presses.anyObject;
-    if (!press) return;
-
-    if (press.type == UIPressTypeSelect) {
-        if (self.cursorMode) {
-            if ([self isUIWebView]) [self clickElementUnderCursor_UIWebView];
-            else [self clickElementUnderCursor_WKWebView];
-        }
-        return;
-    }
-
-    if (press.type == UIPressTypeMenu) {
-        if (self.presentedViewController) {
-            [self.presentedViewController dismissViewControllerAnimated:YES completion:nil];
-        } else if (BrowserCallBool(self.webview, NSSelectorFromString(@"canGoBack"))) {
-            BrowserCallVoid(self.webview, NSSelectorFromString(@"goBack"));
-        }
-        return;
-    }
-
-    if (press.type == UIPressTypePlayPause) {
-        [self showAdvancedMenu];
-        return;
-    }
-
-    [super pressesEnded:presses withEvent:event];
-}
-
-#pragma mark - Players + Menu (keep yours)
+#pragma mark - VLC Player Integration (unchanged)
 
 - (void)openVideoInVLCPlayer:(NSURL *)videoURL title:(NSString *)title {
     BrowserVLCVideoPlayerViewController *vlcPlayer =
@@ -379,15 +319,245 @@ static id BrowserCallId(id obj, SEL sel) {
     [self presentViewController:vc animated:YES completion:^{ [player play]; }];
 }
 
-- (void)showAdvancedMenu {
-    UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"Menu"
-                                                                   message:@"Double-tap SELECT toggles Cursor/Scroll"
-                                                            preferredStyle:UIAlertControllerStyleAlert];
-    [alert addAction:[UIAlertAction actionWithTitle:@"Toggle Cursor/Scroll" style:UIAlertActionStyleDefault handler:^(UIAlertAction *a){
-        (void)a; [self toggleMode];
+- (void)showPlayerSelectionMenuForURL:(NSURL *)videoURL {
+    UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"Select Player"
+                                                                   message:@"Choose video player"
+                                                            preferredStyle:UIAlertControllerStyleActionSheet];
+    [alert addAction:[UIAlertAction actionWithTitle:@"Native Player (AVPlayer)" style:UIAlertActionStyleDefault handler:^(UIAlertAction *a){
+        (void)a; [self openVideoInNativePlayer:videoURL];
+    }]];
+    [alert addAction:[UIAlertAction actionWithTitle:@"VLC Player" style:UIAlertActionStyleDefault handler:^(UIAlertAction *a){
+        (void)a; [self openVideoInVLCPlayer:videoURL title:@"Stream"];
     }]];
     [alert addAction:[UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleCancel handler:nil]];
     [self presentViewController:alert animated:YES completion:nil];
+}
+
+#pragma mark - Menu (restored streaming links + players)
+
+- (void)showAdvancedMenu {
+    UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"🦅 EAGLE BROWSER + VLC"
+                                                                   message:@""
+                                                            preferredStyle:UIAlertControllerStyleAlert];
+
+    // URL Input
+    [alert addAction:[UIAlertAction actionWithTitle:@"🔗 Enter URL" style:UIAlertActionStyleDefault handler:^(UIAlertAction *a) {
+        (void)a;
+        UIAlertController *urlAlert = [UIAlertController alertControllerWithTitle:@"Enter URL" message:nil preferredStyle:UIAlertControllerStyleAlert];
+        [urlAlert addTextFieldWithConfigurationHandler:^(UITextField *tf) {
+            tf.placeholder = @"URL";
+            tf.keyboardType = UIKeyboardTypeURL;
+        }];
+        [urlAlert addAction:[UIAlertAction actionWithTitle:@"Go" style:UIAlertActionStyleDefault handler:^(UIAlertAction *a2) {
+            (void)a2;
+            NSString *url = urlAlert.textFields[0].text;
+            if (url.length > 0) {
+                if (![url hasPrefix:@"http"]) url = [NSString stringWithFormat:@"https://%@", url];
+                [self.webview loadRequest:[NSURLRequest requestWithURL:[NSURL URLWithString:url]]];
+            }
+        }]];
+        [urlAlert addAction:[UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleCancel handler:nil]];
+        [self presentViewController:urlAlert animated:YES completion:nil];
+    }]];
+
+    // Search Engines
+    [alert addAction:[UIAlertAction actionWithTitle:@"🔍 Google" style:UIAlertActionStyleDefault handler:^(UIAlertAction *a) {
+        (void)a; [self.webview loadRequest:[NSURLRequest requestWithURL:[NSURL URLWithString:@"https://www.google.com"]]];
+    }]];
+    [alert addAction:[UIAlertAction actionWithTitle:@"🔍 Yandex" style:UIAlertActionStyleDefault handler:^(UIAlertAction *a) {
+        (void)a; [self.webview loadRequest:[NSURLRequest requestWithURL:[NSURL URLWithString:@"https://yandex.ru"]]];
+    }]];
+    [alert addAction:[UIAlertAction actionWithTitle:@"🔍 Bing" style:UIAlertActionStyleDefault handler:^(UIAlertAction *a) {
+        (void)a; [self.webview loadRequest:[NSURLRequest requestWithURL:[NSURL URLWithString:@"https://www.bing.com"]]];
+    }]];
+    [alert addAction:[UIAlertAction actionWithTitle:@"🔍 DuckDuckGo" style:UIAlertActionStyleDefault handler:^(UIAlertAction *a) {
+        (void)a; [self.webview loadRequest:[NSURLRequest requestWithURL:[NSURL URLWithString:@"https://duckduckgo.com"]]];
+    }]];
+
+    // Streaming Sites
+    [alert addAction:[UIAlertAction actionWithTitle:@"🎬 HD Rezka" style:UIAlertActionStyleDefault handler:^(UIAlertAction *a) {
+        (void)a; [self.webview loadRequest:[NSURLRequest requestWithURL:[NSURL URLWithString:@"https://rezka.ag"]]];
+    }]];
+    [alert addAction:[UIAlertAction actionWithTitle:@"🎬 filmix.my" style:UIAlertActionStyleDefault handler:^(UIAlertAction *a) {
+        (void)a; [self.webview loadRequest:[NSURLRequest requestWithURL:[NSURL URLWithString:@"https://filmix.my"]]];
+    }]];
+    [alert addAction:[UIAlertAction actionWithTitle:@"🎬 Zona.plus" style:UIAlertActionStyleDefault handler:^(UIAlertAction *a) {
+        (void)a; [self.webview loadRequest:[NSURLRequest requestWithURL:[NSURL URLWithString:@"https://w140.zona.plus"]]];
+    }]];
+    [alert addAction:[UIAlertAction actionWithTitle:@"🎬 seasonvar.ru" style:UIAlertActionStyleDefault handler:^(UIAlertAction *a) {
+        (void)a; [self.webview loadRequest:[NSURLRequest requestWithURL:[NSURL URLWithString:@"https://seasonvar.ru"]]];
+    }]];
+    [alert addAction:[UIAlertAction actionWithTitle:@"🎬 2sub-tv.space" style:UIAlertActionStyleDefault handler:^(UIAlertAction *a) {
+        (void)a; [self.webview loadRequest:[NSURLRequest requestWithURL:[NSURL URLWithString:@"https://2sub-tv.space"]]];
+    }]];
+
+    // Extract <video> URL and choose player
+    [alert addAction:[UIAlertAction actionWithTitle:@"⚙️ Select Player for current <video>" style:UIAlertActionStyleDefault handler:^(UIAlertAction *a) {
+        (void)a;
+        NSString *getSrcJS = @"(function(){var v=document.querySelector('video'); if(!v) return ''; var src=v.currentSrc||v.src; if(!src){ var s=v.querySelector('source'); if(s) src=s.src; } return src||''; })();";
+        NSString *videoURLString = [self.webview stringByEvaluatingJavaScriptFromString:getSrcJS];
+        if (videoURLString.length > 0) {
+            NSURL *u = [NSURL URLWithString:videoURLString];
+            if (u) [self showPlayerSelectionMenuForURL:u];
+        }
+    }]];
+
+    // Navigation
+    [alert addAction:[UIAlertAction actionWithTitle:@"⬅️ Go Back" style:UIAlertActionStyleDefault handler:^(UIAlertAction *a) {
+        (void)a; [self.webview goBack];
+    }]];
+    [alert addAction:[UIAlertAction actionWithTitle:@"➡️ Go Forward" style:UIAlertActionStyleDefault handler:^(UIAlertAction *a) {
+        (void)a; [self.webview goForward];
+    }]];
+    [alert addAction:[UIAlertAction actionWithTitle:@"🔄 Refresh" style:UIAlertActionStyleDefault handler:^(UIAlertAction *a) {
+        (void)a; [self.webview reload];
+    }]];
+    [alert addAction:[UIAlertAction actionWithTitle:@"🏠 Home" style:UIAlertActionStyleDefault handler:^(UIAlertAction *a) {
+        (void)a; [self loadHomePage];
+    }]];
+
+    [alert addAction:[UIAlertAction actionWithTitle:@"🖱️ Toggle Cursor/Scroll" style:UIAlertActionStyleDefault handler:^(UIAlertAction *a) {
+        (void)a; [self toggleMode];
+    }]];
+
+    [alert addAction:[UIAlertAction actionWithTitle:@"❌ Cancel" style:UIAlertActionStyleCancel handler:nil]];
+    [self presentViewController:alert animated:YES completion:nil];
+}
+
+#pragma mark - Press Handling (SELECT click fixed + menu buttons via cursor)
+
+- (void)pressesEnded:(NSSet<UIPress *> *)presses withEvent:(UIPressesEvent *)event {
+    (void)event;
+    UIPressType type = presses.anyObject.type;
+
+    if (type == UIPressTypeMenu) {
+        if (self.presentedViewController) {
+            [self.presentedViewController dismissViewControllerAnimated:YES completion:nil];
+        } else if ([self.webview canGoBack]) {
+            [self.webview goBack];
+        }
+        return;
+    }
+
+    if (type == UIPressTypeSelect) {
+        if (!self.cursorMode) return;
+
+        CGPoint point = [self.view convertPoint:_cursorView.frame.origin toView:self.webview];
+
+        if (point.y < 0) {
+            // top menu click by cursor position
+            CGPoint menuPoint = [self.view convertPoint:_cursorView.frame.origin toView:self.topMenuView];
+
+            if (CGRectContainsPoint(self.btnImageBack.frame, menuPoint)) {
+                [self.webview goBack];
+            } else if (CGRectContainsPoint(self.btnImageRefresh.frame, menuPoint)) {
+                [self.webview reload];
+            } else if (CGRectContainsPoint(self.btnImageForward.frame, menuPoint)) {
+                [self.webview goForward];
+            } else if (CGRectContainsPoint(self.btnImageHome.frame, menuPoint)) {
+                [self loadHomePage];
+            } else if (CGRectContainsPoint(self.btnImageFullScreen.frame, menuPoint)) {
+                if (self.topMenuView.hidden) [self showTopNav];
+                else [self hideTopNav];
+            } else if (CGRectContainsPoint(self.btnImgMenu.frame, menuPoint)) {
+                [self showAdvancedMenu];
+            }
+        } else {
+            // detect inputs then click
+            CGPoint p = [self domPointFromViewPoint:point];
+            NSString *fieldType = [[self.webview stringByEvaluatingJavaScriptFromString:
+                                    [NSString stringWithFormat:@"(function(){var el=document.elementFromPoint(%i,%i); return el && el.type ? el.type : '';})()", (int)p.x, (int)p.y]] lowercaseString];
+
+            NSArray *inputTypes = @[@"date",@"datetime",@"email",@"month",@"number",@"password",@"search",@"tel",@"text",@"time",@"url",@"week"];
+            if ([inputTypes containsObject:fieldType]) {
+                [self showInputDialog:point type:fieldType];
+            } else {
+                [self performClick:point];
+            }
+        }
+        return;
+    }
+
+    if (type == UIPressTypePlayPause) {
+        if (self.presentedViewController) {
+            [self.presentedViewController dismissViewControllerAnimated:YES completion:nil];
+        } else {
+            [self showAdvancedMenu];
+        }
+        return;
+    }
+
+    [super pressesEnded:presses withEvent:event];
+}
+
+#pragma mark - Touch Handling (cursor movement)
+
+- (void)touchesBegan:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event {
+    (void)touches; (void)event;
+    _lastTouchLocation = CGPointMake(-1, -1);
+}
+
+- (void)touchesMoved:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event {
+    (void)event;
+    if (!self.cursorMode) {
+        [super touchesMoved:touches withEvent:event];
+        return;
+    }
+
+    for (UITouch *touch in touches) {
+        if (touch.type != UITouchTypeIndirect) continue;
+
+        CGPoint location = [touch locationInView:self.view];
+
+        if (_lastTouchLocation.x == -1 && _lastTouchLocation.y == -1) {
+            _lastTouchLocation = location;
+        } else {
+            CGFloat xDiff = location.x - _lastTouchLocation.x;
+            CGFloat yDiff = location.y - _lastTouchLocation.y;
+            CGRect frame = _cursorView.frame;
+
+            frame.origin.x = MAX(0, MIN(frame.origin.x + xDiff, [UIScreen mainScreen].bounds.size.width - 64));
+            frame.origin.y = MAX(0, MIN(frame.origin.y + yDiff, [UIScreen mainScreen].bounds.size.height - 64));
+
+            _cursorView.frame = frame;
+            _lastTouchLocation = location;
+        }
+
+        _cursorView.image = kDefaultCursor();
+        if ([self.webview request] != nil) {
+            CGPoint point = [self.view convertPoint:_cursorView.frame.origin toView:self.webview];
+            if (point.y >= 0) {
+                CGPoint dom = [self domPointFromViewPoint:point];
+                NSString *containsLink = [self.webview stringByEvaluatingJavaScriptFromString:
+                                         [NSString stringWithFormat:@"document.elementFromPoint(%i,%i).closest('a, input, button') !== null", (int)dom.x, (int)dom.y]];
+                if ([containsLink isEqualToString:@"true"]) _cursorView.image = kPointerCursor() ?: kDefaultCursor();
+            }
+        }
+        break;
+    }
+}
+
+#pragma mark - UIWebViewDelegate
+
+- (void)webViewDidStartLoad:(id)sender {
+    (void)sender;
+    [self.loadingSpinner startAnimating];
+}
+
+- (void)webViewDidFinishLoad:(id)sender {
+    (void)sender;
+    [self.loadingSpinner stopAnimating];
+
+    NSURLRequest *request = [self.webview request];
+    if (request.URL) self.lblUrlBar.text = request.URL.host ?: request.URL.absoluteString;
+
+    // ensure focus disabled for top menu (some storyboards re-enable interaction)
+    [self disableFocusForTopMenuButtons];
+}
+
+- (void)webView:(id)sender didFailLoadWithError:(NSError *)error {
+    (void)sender; (void)error;
+    [self.loadingSpinner stopAnimating];
 }
 
 @end
