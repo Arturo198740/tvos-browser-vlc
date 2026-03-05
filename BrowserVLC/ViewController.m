@@ -24,6 +24,11 @@ static UIImage *kDefaultCursor(void) {
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         image = [UIImage imageNamed:@"Cursor"];
+        if (!image) {
+            if (@available(tvOS 13.0, *)) {
+                image = [UIImage systemImageNamed:@"circle"];
+            }
+        }
     });
     return image;
 }
@@ -33,6 +38,11 @@ static UIImage *kPointerCursor(void) {
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         image = [UIImage imageNamed:@"Pointer"];
+        if (!image) {
+            if (@available(tvOS 13.0, *)) {
+                image = [UIImage systemImageNamed:@"hand.point.up.left"];
+            }
+        }
     });
     return image;
 }
