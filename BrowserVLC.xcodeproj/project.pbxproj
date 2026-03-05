@@ -1,0 +1,356 @@
+// !$*UTF8*$!
+{
+    archiveVersion = 1;
+    classes = {
+    };
+    objectVersion = 50;
+    objects = {
+
+/* Begin PBXBuildFile section */
+        A11111110000000000000001 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = A12222220000000000000001 /* AppDelegate.m */; };
+        A11111110000000000000002 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = A12222220000000000000002 /* main.m */; };
+        A11111110000000000000003 /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = A12222220000000000000003 /* ViewController.m */; };
+        A11111110000000000000004 /* BrowserVLCVideoPlayerViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = A12222220000000000000004 /* BrowserVLCVideoPlayerViewController.m */; };
+        A11111110000000000000005 /* BrowserPlayerPreferences.m in Sources */ = {isa = PBXBuildFile; fileRef = A12222220000000000000005 /* BrowserPlayerPreferences.m */; };
+        A11111110000000000000006 /* BrowserIntegratedVideoPlaybackCoordinator.m in Sources */ = {isa = PBXBuildFile; fileRef = A12222220000000000000006 /* BrowserIntegratedVideoPlaybackCoordinator.m */; };
+        A11111110000000000000007 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = A12222220000000000000007 /* Main.storyboard */; };
+        A11111110000000000000008 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A12222220000000000000008 /* Assets.xcassets */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+        A13333330000000000000001 /* BrowserVLC.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = BrowserVLC.app; sourceTree = BUILT_PRODUCTS_DIR; };
+        A12222220000000000000001 /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
+        A12222220000000000000002 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
+        A12222220000000000000003 /* ViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ViewController.m; sourceTree = "<group>"; };
+        A12222220000000000000004 /* BrowserVLCVideoPlayerViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = BrowserVLCVideoPlayerViewController.m; sourceTree = "<group>"; };
+        A12222220000000000000005 /* BrowserPlayerPreferences.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = BrowserPlayerPreferences.m; sourceTree = "<group>"; };
+        A12222220000000000000006 /* BrowserIntegratedVideoPlaybackCoordinator.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = BrowserIntegratedVideoPlaybackCoordinator.m; sourceTree = "<group>"; };
+        A12222220000000000000007 /* Main.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = Main.storyboard; sourceTree = "<group>"; };
+        A12222220000000000000008 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+        A12222220000000000000009 /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
+        A12222220000000000000010 /* ViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ViewController.h; sourceTree = "<group>"; };
+        A12222220000000000000011 /* BrowserVLCVideoPlayerViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BrowserVLCVideoPlayerViewController.h; sourceTree = "<group>"; };
+        A12222220000000000000012 /* BrowserPlayerPreferences.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BrowserPlayerPreferences.h; sourceTree = "<group>"; };
+        A12222220000000000000013 /* BrowserIntegratedVideoPlaybackCoordinator.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BrowserIntegratedVideoPlaybackCoordinator.h; sourceTree = "<group>"; };
+        A12222220000000000000014 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+        A14444440000000000000001 /* Frameworks */ = {
+            isa = PBXFrameworksBuildPhase;
+            buildActionMask = 2147483647;
+            files = (
+            );
+            runOnlyForDeploymentPostprocessing = 0;
+        };
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+        A15555550000000000000001 = {
+            isa = PBXGroup;
+            children = (
+                A15555550000000000000002 /* BrowserVLC */,
+                A15555550000000000000003 /* Products */,
+            );
+            sourceTree = "<group>";
+        };
+        A15555550000000000000002 /* BrowserVLC */ = {
+            isa = PBXGroup;
+            children = (
+                A12222220000000000000009 /* AppDelegate.h */,
+                A12222220000000000000001 /* AppDelegate.m */,
+                A12222220000000000000010 /* ViewController.h */,
+                A12222220000000000000003 /* ViewController.m */,
+                A12222220000000000000011 /* BrowserVLCVideoPlayerViewController.h */,
+                A12222220000000000000004 /* BrowserVLCVideoPlayerViewController.m */,
+                A12222220000000000000012 /* BrowserPlayerPreferences.h */,
+                A12222220000000000000005 /* BrowserPlayerPreferences.m */,
+                A12222220000000000000013 /* BrowserIntegratedVideoPlaybackCoordinator.h */,
+                A12222220000000000000006 /* BrowserIntegratedVideoPlaybackCoordinator.m */,
+                A16666660000000000000001 /* Base.lproj */,
+                A12222220000000000000008 /* Assets.xcassets */,
+                A12222220000000000000014 /* Info.plist */,
+                A12222220000000000000002 /* main.m */,
+            );
+            path = BrowserVLC;
+            sourceTree = "<group>";
+        };
+        A15555550000000000000003 /* Products */ = {
+            isa = PBXGroup;
+            children = (
+                A13333330000000000000001 /* BrowserVLC.app */,
+            );
+            name = Products;
+            sourceTree = "<group>";
+        };
+        A16666660000000000000001 /* Base.lproj */ = {
+            isa = PBXGroup;
+            children = (
+                A12222220000000000000007 /* Main.storyboard */,
+            );
+            path = Base.lproj;
+            sourceTree = "<group>";
+        };
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+        A17777770000000000000001 /* BrowserVLC */ = {
+            isa = PBXNativeTarget;
+            buildConfigurationList = A18888880000000000000003 /* Build configuration list for PBXNativeTarget "BrowserVLC" */;
+            buildPhases = (
+                A17777770000000000000002 /* Sources */,
+                A14444440000000000000001 /* Frameworks */,
+                A17777770000000000000003 /* Resources */,
+            );
+            buildRules = (
+            );
+            dependencies = (
+            );
+            name = BrowserVLC;
+            productName = BrowserVLC;
+            productReference = A13333330000000000000001 /* BrowserVLC.app */;
+            productType = "com.apple.product-type.application";
+        };
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+        A19999990000000000000001 /* Project object */ = {
+            isa = PBXProject;
+            attributes = {
+                LastUpgradeCheck = 1100;
+                TargetAttributes = {
+                    A17777770000000000000001 = {
+                        CreatedOnToolsVersion = 11.0;
+                    };
+                };
+            };
+            buildConfigurationList = A18888880000000000000001 /* Build configuration list for PBXProject "BrowserVLC" */;
+            compatibilityVersion = "Xcode 9.3";
+            developmentRegion = en;
+            hasScannedForEncodings = 0;
+            knownRegions = (
+                en,
+                Base,
+            );
+            mainGroup = A15555550000000000000001;
+            productRefGroup = A15555550000000000000003 /* Products */;
+            projectDirPath = "";
+            projectRoot = "";
+            targets = (
+                A17777770000000000000001 /* BrowserVLC */,
+            );
+        };
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+        A17777770000000000000003 /* Resources */ = {
+            isa = PBXResourcesBuildPhase;
+            buildActionMask = 2147483647;
+            files = (
+                A11111110000000000000007 /* Main.storyboard in Resources */,
+                A11111110000000000000008 /* Assets.xcassets in Resources */,
+            );
+            runOnlyForDeploymentPostprocessing = 0;
+        };
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+        A17777770000000000000002 /* Sources */ = {
+            isa = PBXSourcesBuildPhase;
+            buildActionMask = 2147483647;
+            files = (
+                A11111110000000000000001 /* AppDelegate.m in Sources */,
+                A11111110000000000000002 /* main.m in Sources */,
+                A11111110000000000000003 /* ViewController.m in Sources */,
+                A11111110000000000000004 /* BrowserVLCVideoPlayerViewController.m in Sources */,
+                A11111110000000000000005 /* BrowserPlayerPreferences.m in Sources */,
+                A11111110000000000000006 /* BrowserIntegratedVideoPlaybackCoordinator.m in Sources */,
+            );
+            runOnlyForDeploymentPostprocessing = 0;
+        };
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+        A1AAAAAAAA0000000000000001 /* Debug */ = {
+            isa = XCBuildConfiguration;
+            buildSettings = {
+                ALWAYS_SEARCH_USER_PATHS = NO;
+                CLANG_ANALYZER_NONNULL = YES;
+                CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+                CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+                CLANG_CXX_LIBRARY = "libc++";
+                CLANG_ENABLE_MODULES = YES;
+                CLANG_ENABLE_OBJC_ARC = YES;
+                CLANG_ENABLE_OBJC_WEAK = YES;
+                CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+                CLANG_WARN_BOOL_CONVERSION = YES;
+                CLANG_WARN_COMMA = YES;
+                CLANG_WARN_CONSTANT_CONVERSION = YES;
+                CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+                CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+                CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+                CLANG_WARN_EMPTY_BODY = YES;
+                CLANG_WARN_ENUM_CONVERSION = YES;
+                CLANG_WARN_INFINITE_RECURSION = YES;
+                CLANG_WARN_INT_CONVERSION = YES;
+                CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+                CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+                CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+                CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+                CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+                CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+                CLANG_WARN_STRICT_PROTOTYPES = YES;
+                CLANG_WARN_SUSPICIOUS_MOVE = YES;
+                CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+                CLANG_WARN_UNREACHABLE_CODE = YES;
+                CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+                COPY_PHASE_STRIP = NO;
+                DEBUG_INFORMATION_FORMAT = dwarf;
+                ENABLE_STRICT_OBJC_MSGSEND = YES;
+                ENABLE_TESTABILITY = YES;
+                GCC_C_LANGUAGE_STANDARD = gnu11;
+                GCC_DYNAMIC_NO_PIC = NO;
+                GCC_NO_COMMON_BLOCKS = YES;
+                GCC_OPTIMIZATION_LEVEL = 0;
+                GCC_PREPROCESSOR_DEFINITIONS = (
+                    "DEBUG=1",
+                    "$(inherited)",
+                );
+                GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+                GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+                GCC_WARN_UNDECLARED_SELECTOR = YES;
+                GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+                GCC_WARN_UNUSED_FUNCTION = YES;
+                GCC_WARN_UNUSED_VARIABLE = YES;
+                MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+                MTL_FAST_MATH = YES;
+                ONLY_ACTIVE_ARCH = YES;
+                SDKROOT = appletvos;
+                TVOS_DEPLOYMENT_TARGET = 13.0;
+            };
+            name = Debug;
+        };
+        A1AAAAAAAA0000000000000002 /* Release */ = {
+            isa = XCBuildConfiguration;
+            buildSettings = {
+                ALWAYS_SEARCH_USER_PATHS = NO;
+                CLANG_ANALYZER_NONNULL = YES;
+                CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+                CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+                CLANG_CXX_LIBRARY = "libc++";
+                CLANG_ENABLE_MODULES = YES;
+                CLANG_ENABLE_OBJC_ARC = YES;
+                CLANG_ENABLE_OBJC_WEAK = YES;
+                CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+                CLANG_WARN_BOOL_CONVERSION = YES;
+                CLANG_WARN_COMMA = YES;
+                CLANG_WARN_CONSTANT_CONVERSION = YES;
+                CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+                CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+                CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+                CLANG_WARN_EMPTY_BODY = YES;
+                CLANG_WARN_ENUM_CONVERSION = YES;
+                CLANG_WARN_INFINITE_RECURSION = YES;
+                CLANG_WARN_INT_CONVERSION = YES;
+                CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+                CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+                CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+                CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+                CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+                CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+                CLANG_WARN_STRICT_PROTOTYPES = YES;
+                CLANG_WARN_SUSPICIOUS_MOVE = YES;
+                CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+                CLANG_WARN_UNREACHABLE_CODE = YES;
+                CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+                COPY_PHASE_STRIP = NO;
+                DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+                ENABLE_NS_ASSERTIONS = NO;
+                ENABLE_STRICT_OBJC_MSGSEND = YES;
+                GCC_C_LANGUAGE_STANDARD = gnu11;
+                GCC_NO_COMMON_BLOCKS = YES;
+                GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+                GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+                GCC_WARN_UNDECLARED_SELECTOR = YES;
+                GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+                GCC_WARN_UNUSED_FUNCTION = YES;
+                GCC_WARN_UNUSED_VARIABLE = YES;
+                MTL_ENABLE_DEBUG_INFO = NO;
+                MTL_FAST_MATH = YES;
+                SDKROOT = appletvos;
+                TVOS_DEPLOYMENT_TARGET = 13.0;
+                VALIDATE_PRODUCT = YES;
+            };
+            name = Release;
+        };
+        A1AAAAAAAA0000000000000003 /* Debug */ = {
+            isa = XCBuildConfiguration;
+            buildSettings = {
+                ASSETCATALOG_COMPILER_APPICON_NAME = "App Icon & Top Shelf Image";
+                ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
+                CLANG_ENABLE_MODULES = YES;
+                CODE_SIGN_STYLE = Automatic;
+                DEVELOPMENT_TEAM = "";
+                ENABLE_PREVIEWS = YES;
+                GCC_PRECOMPILE_PREFIX_HEADER = YES;
+                INFOPLIST_FILE = Info.plist;
+                LD_RUNPATH_SEARCH_PATHS = (
+                    "$(inherited)",
+                    "@executable_path/Frameworks",
+                );
+                PRODUCT_BUNDLE_IDENTIFIER = com.tvos.BrowserVLC;
+                PRODUCT_NAME = "$(TARGET_NAME)";
+                SWIFT_OBJC_BRIDGING_HEADER = "";
+                TARGETED_DEVICE_FAMILY = 3;
+                TVOS_DEPLOYMENT_TARGET = 13.0;
+            };
+            name = Debug;
+        };
+        A1AAAAAAAA0000000000000004 /* Release */ = {
+            isa = XCBuildConfiguration;
+            buildSettings = {
+                ASSETCATALOG_COMPILER_APPICON_NAME = "App Icon & Top Shelf Image";
+                ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
+                CLANG_ENABLE_MODULES = YES;
+                CODE_SIGN_STYLE = Automatic;
+                DEVELOPMENT_TEAM = "";
+                ENABLE_PREVIEWS = YES;
+                GCC_PRECOMPILE_PREFIX_HEADER = YES;
+                INFOPLIST_FILE = Info.plist;
+                LD_RUNPATH_SEARCH_PATHS = (
+                    "$(inherited)",
+                    "@executable_path/Frameworks",
+                );
+                PRODUCT_BUNDLE_IDENTIFIER = com.tvos.BrowserVLC;
+                PRODUCT_NAME = "$(TARGET_NAME)";
+                SWIFT_OBJC_BRIDGING_HEADER = "";
+                TARGETED_DEVICE_FAMILY = 3;
+                TVOS_DEPLOYMENT_TARGET = 13.0;
+            };
+            name = Release;
+        };
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+        A18888880000000000000001 /* Build configuration list for PBXProject "BrowserVLC" */ = {
+            isa = XCConfigurationList;
+            buildConfigurations = (
+                A1AAAAAAAA0000000000000001 /* Debug */,
+                A1AAAAAAAA0000000000000002 /* Release */,
+            );
+            defaultConfigurationIsVisible = 0;
+            defaultConfigurationName = Release;
+        };
+        A18888880000000000000003 /* Build configuration list for PBXNativeTarget "BrowserVLC" */ = {
+            isa = XCConfigurationList;
+            buildConfigurations = (
+                A1AAAAAAAA0000000000000003 /* Debug */,
+                A1AAAAAAAA0000000000000004 /* Release */,
+            );
+            defaultConfigurationIsVisible = 0;
+            defaultConfigurationName = Release;
+        };
+/* End XCConfigurationList section */
+    };
+    rootObject = A19999990000000000000001 /* Project object */;
+}

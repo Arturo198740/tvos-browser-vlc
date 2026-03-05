@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder.AppleTV.Storyboard" version="3.0" toolsVersion="21701" targetRuntime="AppleTV" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+    <device id="appleTV"/>
+    <dependencies>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="21679"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <scenes>
+        <scene sceneID="tne-QT-ifu">
+            <objects>
+                <viewController id="BYZ-38-t0r" customClass="ViewController" sceneMemberID="viewController">
+                    <layoutGuides>
+                        <viewControllerLayoutGuide type="top" id="y3c-jy-aDJ"/>
+                        <viewControllerLayoutGuide type="bottom" id="wfy-db-euE"/>
+                    </layoutGuides>
+                    <view key="view" contentMode="scaleToFill" id="8bC-Xf-vdC">
+                        <rect key="frame" x="0.0" y="0.0" width="1920" height="1080"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="k8J-8P-qJc" userLabel="Browser Container">
+                                <rect key="frame" x="0.0" y="0.0" width="1920" height="1080"/>
+                            </view>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="hTg-3q-wQb" userLabel="Top Menu">
+                                <rect key="frame" x="0.0" y="0.0" width="1920" height="100"/>
+                                <subviews>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="btnBack">
+                                        <rect key="frame" x="40" y="25" width="50" height="50"/>
+                                        <constraints>
+                                            <constraint firstAttribute="width" constant="50" id="BQw-aa-ytR"/>
+                                            <constraint firstAttribute="height" constant="50" id="tRm-tC-n5t"/>
+                                        </constraints>
+                                        <fontDescription key="fontDescription" type="system" pointSize="30"/>
+                                        <inset key="contentEdgeInsets" minX="10" minY="10" maxX="10" maxY="10"/>
+                                        <state key="normal" title="◀"/>
+                                    </button>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="btnForward">
+                                        <rect key="frame" x="100" y="25" width="50" height="50"/>
+                                        <constraints>
+                                            <constraint firstAttribute="width" constant="50" id="HGX-kS-OdL"/>
+                                            <constraint firstAttribute="height" constant="50" id="yMg-qU-cAU"/>
+                                        </constraints>
+                                        <fontDescription key="fontDescription" type="system" pointSize="30"/>
+                                        <inset key="contentEdgeInsets" minX="10" minY="10" maxX="10" maxY="10"/>
+                                        <state key="normal" title="▶"/>
+                                    </button>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="btnRefresh">
+                                        <rect key="frame" x="160" y="25" width="50" height="50"/>
+                                        <constraints>
+                                            <constraint firstAttribute="width" constant="50" id="Dcb-UC-FgP"/>
+                                            <constraint firstAttribute="height" constant="50" id="Q6w-Vg-ubL"/>
+                                        </constraints>
+                                        <fontDescription key="fontDescription" type="system" pointSize="28"/>
+                                        <inset key="contentEdgeInsets" minX="10" minY="10" maxX="10" maxY="10"/>
+                                        <state key="normal" title="↻"/>
+                                    </button>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="btnHome">
+                                        <rect key="frame" x="220" y="25" width="50" height="50"/>
+                                        <constraints>
+                                            <constraint firstAttribute="width" constant="50" id="Cph-GY-W3P"/>
+                                            <constraint firstAttribute="height" constant="50" id="KnL-xG-qTJ"/>
+                                        </constraints>
+                                        <fontDescription key="fontDescription" type="system" pointSize="28"/>
+                                        <inset key="contentEdgeInsets" minX="10" minY="10" maxX="10" maxY="10"/>
+                                        <state key="normal" title="⌂"/>
+                                    </button>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Loading..." textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="lblUrl">
+                                        <rect key="frame" x="290" y="35" width="1340" height="30"/>
+                                        <fontDescription key="fontDescription" type="system" pointSize="22"/>
+                                        <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        <nil key="highlightedColor"/>
+                                    </label>
+                                    <activityIndicatorView opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" style="white" translatesAutoresizingMaskIntoConstraints="NO" id="spinner">
+                                        <rect key="frame" x="1660" y="40" width="20" height="20"/>
+                                    </activityIndicatorView>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="btnFullscreen">
+                                        <rect key="frame" x="1700" y="25" width="50" height="50"/>
+                                        <constraints>
+                                            <constraint firstAttribute="width" constant="50" id="AEq-iq-vK8"/>
+                                            <constraint firstAttribute="height" constant="50" id="spf-xG-sda"/>
+                                        </constraints>
+                                        <fontDescription key="fontDescription" type="system" pointSize="24"/>
+                                        <inset key="contentEdgeInsets" minX="10" minY="10" maxX="10" maxY="10"/>
+                                        <state key="normal" title="⛶"/>
+                                    </button>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="btnMenu">
+                                        <rect key="frame" x="1760" y="25" width="120" height="50"/>
+                                        <constraints>
+                                            <constraint firstAttribute="height" constant="50" id="Cl6-Dq-WgR"/>
+                                            <constraint firstAttribute="width" constant="120" id="v1I-sO-bnL"/>
+                                        </constraints>
+                                        <fontDescription key="fontDescription" type="boldSystem" pointSize="20"/>
+                                        <inset key="contentEdgeInsets" minX="10" minY="10" maxX="10" maxY="10"/>
+                                        <state key="normal" title="MENU"/>
+                                    </button>
+                                </subviews>
+                                <color key="backgroundColor" red="0.098039215690000001" green="0.098039215690000001" blue="0.1176470588" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="100" id="0lZ-Kb-Qax"/>
+                                    <constraint firstItem="btnBack" firstAttribute="leading" secondItem="hTg-3q-wQb" secondAttribute="leading" constant="40" id="2Du-Ja-Rne"/>
+                                    <constraint firstItem="btnForward" firstAttribute="leading" secondItem="btnBack" secondAttribute="trailing" constant="10" id="5mp-Ts-a9l"/>
+                                    <constraint firstItem="btnHome" firstAttribute="leading" secondItem="btnRefresh" secondAttribute="trailing" constant="10" id="AHh-hx-hgf"/>
+                                    <constraint firstItem="btnRefresh" firstAttribute="leading" secondItem="btnForward" secondAttribute="trailing" constant="10" id="BfL-Wd-bFt"/>
+                                    <constraint firstItem="lblUrl" firstAttribute="leading" secondItem="btnHome" secondAttribute="trailing" constant="20" id="DcV-ub-hza"/>
+                                    <constraint firstItem="spinner" firstAttribute="centerY" secondItem="hTg-3q-wQb" secondAttribute="centerY" id="FQw-XE-fUq"/>
+                                    <constraint firstItem="btnFullscreen" firstAttribute="centerY" secondItem="hTg-3q-wQb" secondAttribute="centerY" id="HFp-DI-ojn"/>
+                                    <constraint firstAttribute="trailing" secondItem="btnMenu" secondAttribute="trailing" constant="40" id="PpS-8N-cnm"/>
+                                    <constraint firstItem="btnMenu" firstAttribute="leading" secondItem="btnFullscreen" secondAttribute="trailing" constant="10" id="T5w-OK-ydj"/>
+                                    <constraint firstItem="btnHome" firstAttribute="centerY" secondItem="hTg-3q-wQb" secondAttribute="centerY" id="VeU-Wc-3Bq"/>
+                                    <constraint firstItem="btnForward" firstAttribute="centerY" secondItem="hTg-3q-wQb" secondAttribute="centerY" id="a9N-cF-Tep"/>
+                                    <constraint firstItem="btnBack" firstAttribute="centerY" secondItem="hTg-3q-wQb" secondAttribute="centerY" id="ejY-fX-itR"/>
+                                    <constraint firstItem="btnRefresh" firstAttribute="centerY" secondItem="hTg-3q-wQb" secondAttribute="centerY" id="gWO-Hm-5T6"/>
+                                    <constraint firstItem="lblUrl" firstAttribute="centerY" secondItem="hTg-3q-wQb" secondAttribute="centerY" id="kPR-WU-kUI"/>
+                                    <constraint firstItem="spinner" firstAttribute="leading" secondItem="lblUrl" secondAttribute="trailing" constant="30" id="l5G-oH-d5D"/>
+                                    <constraint firstItem="btnMenu" firstAttribute="centerY" secondItem="hTg-3q-wQb" secondAttribute="centerY" id="oIl-eG-XHX"/>
+                                    <constraint firstItem="btnFullscreen" firstAttribute="leading" secondItem="spinner" secondAttribute="trailing" constant="20" id="xDJ-1k-ysv"/>
+                                </constraints>
+                            </view>
+                        </subviews>
+                        <viewLayoutGuide key="safeArea" id="wu6-TO-1qx"/>
+                        <color key="backgroundColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                        <constraints>
+                            <constraint firstItem="k8J-8P-qJc" firstAttribute="top" secondItem="8bC-Xf-vdC" secondAttribute="top" id="0rW-eQ-OPT"/>
+                            <constraint firstAttribute="trailing" secondItem="k8J-8P-qJc" secondAttribute="trailing" id="HlN-As-Lef"/>
+                            <constraint firstItem="k8J-8P-qJc" firstAttribute="leading" secondItem="8bC-Xf-vdC" secondAttribute="leading" id="egm-5P-Ck0"/>
+                            <constraint firstItem="hTg-3q-wQb" firstAttribute="top" secondItem="8bC-Xf-vdC" secondAttribute="top" id="jdl-dm-Yqq"/>
+                            <constraint firstItem="hTg-3q-wQb" firstAttribute="leading" secondItem="8bC-Xf-vdC" secondAttribute="leading" id="k9j-gE-rI8"/>
+                            <constraint firstAttribute="trailing" secondItem="hTg-3q-wQb" secondAttribute="trailing" id="siU-1M-YdP"/>
+                            <constraint firstAttribute="bottom" secondItem="k8J-8P-qJc" secondAttribute="bottom" id="xVL-Ic-vv1"/>
+                        </constraints>
+                    </view>
+                    <connections>
+                        <outlet property="browserContainerView" destination="k8J-8P-qJc" id="eKi-Iu-rV8"/>
+                        <outlet property="btnImageBack" destination="btnBack" id="kFc-pK-fgm"/>
+                        <outlet property="btnImageForward" destination="btnForward" id="YwE-Np-sbo"/>
+                        <outlet property="btnImageFullScreen" destination="btnFullscreen" id="vqy-jU-qzV"/>
+                        <outlet property="btnImageHome" destination="btnHome" id="H3Z-KL-fSM"/>
+                        <outlet property="btnImageRefresh" destination="btnRefresh" id="U6q-rH-2i5"/>
+                        <outlet property="btnImgMenu" destination="btnMenu" id="TjH-Et-hSt"/>
+                        <outlet property="lblUrlBar" destination="lblUrl" id="WVa-Wd-bv5"/>
+                        <outlet property="loadingSpinner" destination="spinner" id="NQH-SJ-yfm"/>
+                        <outlet property="topMenuView" destination="hTg-3q-wQb" id="Pld-DA-jAR"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="53" y="53"/>
+        </scene>
+    </scenes>
+</document>
